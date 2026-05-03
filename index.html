@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFAITH Engine - Mustard Seed Faith (A1)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #1a0f0f 0%, #0a0a0a 50%, #050505 100%);
+            color: #f4f4f5; 
+            overflow: hidden; 
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Classic Bible Fonts */
+        .font-serif-classic { font-family: 'Playfair Display', serif; }
+        .font-sans-ui { font-family: 'Inter', sans-serif; }
+
+        /* Color Tokens */
+        .text-sacred-gold { color: #D4AF37; }
+        .bg-sacred-gold { background-color: #D4AF37; }
+        .border-sacred-gold { border-color: #D4AF37; }
+        .bg-burgundy { background-color: #722F37; }
+
+        /* Leather Texture Overlay */
+        .leather-overlay {
+            position: absolute; inset: 0;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+            opacity: 0.25; mix-blend-mode: overlay; pointer-events: none; z-index: 0;
+        }
+
+        /* Divine Light Glow */
+        .divine-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90vw; height: 90vw; border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* Subtle Cross Watermark */
+        .cross-watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80vh; color: #ffffff; opacity: 0.02; pointer-events: none; z-index: 0;
+            font-family: 'Times New Roman', Times, serif; font-weight: 100;
+        }
+
+        /* Gold Foil Border Frame */
+        .gold-foil-frame {
+            position: fixed; inset: 12px; pointer-events: none; z-index: 50;
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            outline: 1px solid rgba(212, 175, 55, 0.1); outline-offset: 4px;
+        }
+        .gold-foil-frame::before, .gold-foil-frame::after {
+            content: ''; position: absolute; width: 6px; height: 6px; background: #D4AF37;
+        }
+        .gold-foil-frame::before { top: -4px; left: -4px; box-shadow: calc(100vw - 32px) 0 0 #D4AF37; }
+        .gold-foil-frame::after { bottom: -4px; left: -4px; box-shadow: calc(100vw - 32px) 0 0 #D4AF37; }
+
+        /* Burgundy Ribbon Bookmark */
+        .ribbon-bookmark {
+            position: fixed; top: -10px; right: 8%; width: 40px; height: 180px;
+            background: linear-gradient(to bottom, #4a1922, #8a2a3b);
+            z-index: 60; transform: rotate(2deg); box-shadow: -4px 10px 15px rgba(0,0,0,0.8);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%); pointer-events: none;
+        }
+        .ribbon-bookmark::after {
+            content: ''; position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 2px; background: #D4AF37; opacity: 0.8;
+        }
+
+        /* Step Management */
+        #lesson-container {
+            position: relative; width: 100%; height: 100%; z-index: 10;
+        }
+        .step-container {
+            position: absolute; inset: 0; display: none; opacity: 0;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; padding-bottom: 6rem;
+        }
+        .step-container.active {
+            display: flex; opacity: 1; animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Classic UI Cards */
+        .bible-card {
+            background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(15px);
+            border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+            border-radius: 4px; position: relative; max-width: 1000px; width: 100%;
+            padding: 3rem; max-height: 80vh; overflow-y: auto;
+        }
+        .bible-card::-webkit-scrollbar { width: 6px; }
+        .bible-card::-webkit-scrollbar-thumb { background: #D4AF37; }
+
+        /* Gold Gradient Buttons */
+        .btn-gold {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 50%, #996515 100%);
+            color: #050505; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em;
+            border: 1px solid #FFD700; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s ease; border-radius: 2px; padding: 16px 32px; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-gold:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5); }
+        .btn-gold:disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
+        
+        .capsule {
+            display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px;
+            background: rgba(212, 175, 55, 0.1); border: 1px solid #D4AF37; border-radius: 2px;
+            font-size: 0.85rem; font-weight: 900; letter-spacing: 0.2em; color: #D4AF37;
+            text-transform: uppercase; font-family: 'Inter', sans-serif;
+        }
+
+        .vocab-trigger { color: #D4AF37; border-bottom: 1px dashed #D4AF37; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .vocab-trigger:hover { color: #FFF; border-bottom-style: solid; text-shadow: 0 0 10px rgba(212, 175, 55, 0.8); }
+
+        /* Candlelight Reveal Effect */
+        .candlelight-container {
+            position: relative; overflow: hidden; background: #000; cursor: crosshair;
+        }
+        .candlelight-overlay {
+            position: absolute; inset: 0; background: #000; z-index: 10;
+            mask-image: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, rgba(0,0,0,1) 100%);
+            -webkit-mask-image: radial-gradient(circle 180px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, rgba(0,0,0,1) 100%);
+            pointer-events: none;
+        }
+        .candlelight-content { position: relative; z-index: 5; color: #D4AF37; text-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
+
+        /* Scales of Truth (Drag & Drop) */
+        .truth-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 20px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s;
+            font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem;
+        }
+        .truth-item:hover { border-color: #D4AF37; background: rgba(212, 175, 55, 0.1); transform: translateX(5px); }
+        .scale-zone {
+            min-height: 150px; border: 2px dashed rgba(212, 175, 55, 0.3); padding: 1rem;
+            transition: all 0.3s;
+        }
+        .scale-zone.active { background: rgba(212, 175, 55, 0.05); border-style: solid; }
+
+        /* Panels */
+        .side-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 500px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); border-left: 2px solid #D4AF37; z-index: 100; transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; box-shadow: -20px 0 50px rgba(0,0,0,0.9); }
+        .side-panel.open { right: 0; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.7s ease-out forwards; }
+    </style>
+</head>
+<body class="text-lg md:text-xl selection:bg-[#D4AF37]/30 selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- ASSETS & CONSTANTS ---
+        const YOUTUBE_ID = "OE_34HQp6is"; 
+        const BG_COVER = "https://eternitynews.com.au/wp-content/uploads/2022/10/Untitled-design.jpg"; 
+
+        // --- REUSABLE UI ---
+        const Icon = ({ name, size = 24, className = "" }) => (
+            <i className={`fa-solid fa-${name} ${className}`} style={{ fontSize: size }}></i>
+        );
+        const IconReg = ({ name, size = 24, className = "" }) => (
+            <i className={`fa-regular fa-${name} ${className}`} style={{ fontSize: size }}></i>
+        );
+
+        const ClassicDivider = () => (
+            <div className="flex items-center justify-center w-full my-6 opacity-60">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
+                <div className="mx-4 w-2 h-2 rotate-45 bg-[#D4AF37]"></div>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
+            </div>
+        );
+
+        // ==========================================
+        // 🛠️ TEACHER TOOLSET & FULLSCREEN
+        // ==========================================
+        const TeacherTools = ({ isFs, toggleFs }) => {
+            const [whiteboardOpen, setWhiteboardOpen] = useState(false);
+            const [dictOpen, setDictOpen] = useState(false);
+
+            useEffect(() => {
+                window.openDictionary = (word, def, ex, prompt) => {
+                    document.getElementById('dict-word').innerText = word;
+                    document.getElementById('dict-def').innerText = def;
+                    document.getElementById('dict-ex').innerText = `"${ex}"`;
+                    document.getElementById('dict-prompt').innerText = prompt;
+                    setDictOpen(true);
+                };
+
+                window.closeDictionary = () => setDictOpen(false);
+            }, []);
+
+            return (
+                <React.Fragment>
+                <div className="fixed top-8 right-12 z-[60] flex items-center gap-4">
+                    <button onClick={() => setWhiteboardOpen(!whiteboardOpen)} className="w-12 h-12 bg-[#0a0a0a] border border-[#D4AF37]/50 hover:bg-[#1a1a1a] transition-all shadow-2xl flex items-center justify-center" title="Theological Notes">
+                        <Icon name="feather" size={20} className="text-[#D4AF37]" />
+                    </button>
+                    <button onClick={toggleFs} className="w-12 h-12 bg-[#0a0a0a] border border-[#D4AF37]/50 hover:bg-[#1a1a1a] transition-all shadow-2xl flex items-center justify-center" title="Toggle Fullscreen">
+                        <Icon name={isFs ? "compress" : "expand"} size={20} className="text-[#D4AF37]" />
+                    </button>
+                </div>
+
+                {/* Scribe's Journal Panel */}
+                <div className={`side-panel p-8 ${whiteboardOpen ? 'open' : ''}`}>
+                    <div className="flex justify-between items-center mb-8 pb-6 border-b border-zinc-800">
+                        <h3 className="font-bold text-2xl text-sacred-gold uppercase tracking-widest font-serif-classic italic flex items-center gap-3">
+                            <Icon name="feather" size={24}/> The Scribe's Journal
+                        </h3>
+                        <button onClick={() => setWhiteboardOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                            <Icon name="xmark" size={28}/>
+                        </button>
+                    </div>
+                    <div className="flex gap-4 mb-6">
+                        <button onClick={() => {
+                            const text = document.getElementById('journal-textarea').value;
+                            if(!text.trim()) return alert("Your journal is empty.");
+                            const blob = new Blob([text], { type: 'text/plain' });
+                            const anchor = document.createElement('a'); 
+                            anchor.download = `Wolfaith_Journal.txt`;
+                            anchor.href = window.URL.createObjectURL(blob); 
+                            anchor.click();
+                        }} className="flex-1 bg-sacred-gold/10 hover:bg-sacred-gold/20 text-sacred-gold border border-sacred-gold/50 py-3 rounded text-sm font-bold tracking-widest uppercase transition-colors">
+                            Save Text
+                        </button>
+                        <button onClick={() => { if(confirm("Erase all?")) document.getElementById('journal-textarea').value=''; }} className="flex-1 bg-burgundy/10 hover:bg-burgundy/20 text-red-400 border border-burgundy/50 py-3 rounded text-sm font-bold tracking-widest uppercase transition-colors">
+                            Erase
+                        </button>
+                    </div>
+                    <textarea id="journal-textarea" className="flex-1 w-full bg-black/40 text-zinc-300 resize-none outline-none border border-zinc-800 p-6 rounded focus:border-sacred-gold transition-all font-serif-classic italic text-xl leading-relaxed shadow-inner" placeholder="Write your reflection here..."></textarea>
+                </div>
+
+                {/* Dictionary Panel */}
+                <div className={`side-panel p-8 ${dictOpen ? 'open' : ''}`}>
+                    <div className="flex justify-between items-center mb-8 pb-6 border-b border-zinc-800">
+                        <h3 className="font-bold text-2xl text-sacred-gold uppercase tracking-widest font-serif-classic italic flex items-center gap-3">
+                            <Icon name="book-open" size={24}/> Scholar's Lexicon
+                        </h3>
+                        <button onClick={() => setDictOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                            <Icon name="xmark" size={28}/>
+                        </button>
+                    </div>
+                    <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-4">
+                        <div>
+                            <p id="dict-word" className="font-serif-classic italic text-4xl text-sacred-gold mb-2 tracking-widest drop-shadow-md">Word</p>
+                            <p id="dict-def" className="text-zinc-300 text-lg leading-relaxed font-sans-ui font-light">Definition goes here.</p>
+                        </div>
+                        <div className="bg-[#1a0f0f]/80 p-6 rounded border-l-2 border-[#722F37]">
+                            <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2 font-bold font-sans-ui">Context</p>
+                            <p id="dict-ex" className="text-zinc-200 italic text-base font-serif-classic">"Example text."</p>
+                        </div>
+                        <div className="bg-black/50 p-6 border border-sacred-gold/30 rounded">
+                            <p id="dict-prompt" className="text-sacred-gold text-sm font-bold leading-relaxed font-sans-ui tracking-wide">Prompt text.</p>
+                        </div>
+                    </div>
+                </div>
+                </React.Fragment>
+            );
+        };
+
+        // --- SLIDE COMPONENTS ---
+        const CoverSlide = ({ nextSlide }) => (
+            <div className="relative w-full h-full flex flex-col items-center justify-center text-center p-8 z-10">
+                <div className="absolute inset-0 z-0 bg-cover bg-center opacity-30 mix-blend-luminosity mask-image-gradient" style={{ backgroundImage: `url(${BG_COVER})` }}></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent z-0"></div>
+                
+                <div className="z-10 flex flex-col items-center justify-center mt-20 w-full max-w-5xl mx-auto">
+                    <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.5em] text-xs uppercase mb-6">Interactive Study</p>
+                    <h1 className="text-6xl md:text-8xl font-serif-classic text-white mb-4 drop-shadow-2xl italic tracking-tight">The Chosen</h1>
+                    <h2 className="text-2xl md:text-4xl text-zinc-300 font-sans-ui font-black mb-10 tracking-[0.2em] uppercase">Mustard Seed Faith</h2>
+                    
+                    <ClassicDivider />
+                    
+                    <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-sans-ui font-bold mb-12 tracking-widest text-zinc-400 uppercase">
+                        <span>A1 Level</span>
+                        <div className="w-1 h-1 bg-[#D4AF37] rotate-45"></div>
+                        <span>Can / Could / Will</span>
+                        <div className="w-1 h-1 bg-[#D4AF37] rotate-45"></div>
+                        <span>Imperatives</span>
+                    </div>
+
+                    <button onClick={nextSlide} className="btn-gold px-10 py-4 text-xs"><Icon name="play" className="mr-2" /> Enter the Scene</button>
+                </div>
+            </div>
+        );
+
+        const TeacherGuideSlide = ({ startLesson }) => (
+            <div className="min-h-screen flex items-center justify-center p-8 relative overflow-hidden w-full z-10">
+                <div className="max-w-4xl w-full z-10 flex flex-col items-center text-center">
+                    <h1 className="text-[#D4AF37] font-serif-classic text-4xl italic mb-2 drop-shadow-md">Wolfaith Engine</h1>
+                    <p className="text-zinc-400 font-sans-ui text-xs font-bold tracking-[0.3em] uppercase mb-10">Teacher's Dashboard</p>
+                    
+                    <div className="bible-card p-10 w-full mb-10 text-left border-[#D4AF37]/30">
+                        <h2 className="text-2xl font-serif-classic text-white mb-4">Lesson Objective: Mustard Seed Faith</h2>
+                        <p className="text-zinc-300 text-lg leading-relaxed font-sans-ui font-light mb-6">
+                            An A1 Level (Beginner) immersive lesson. We explore basic abilities (Can/Could), future promises (Will), and strong commands (Imperatives) using accessible nature vocabulary.
+                        </p>
+                        <div className="bg-emerald-900/20 border-l-2 border-emerald-900 p-4">
+                            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">A1 Friendly</p>
+                            <p className="text-sm text-zinc-400 font-sans-ui">The grammar is kept simple, but the theological discussion remains profound and respectful.</p>
+                        </div>
+                    </div>
+
+                    <button onClick={startLesson} className="btn-gold px-12 py-4 text-sm"><Icon name="play" className="mr-2"/> Begin Experience</button>
+                </div>
+            </div>
+        );
+
+        const DiscussionSlide = ({ title, question, hint }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name="comments" size={40} className="text-[#D4AF37] mb-8 opacity-80" />
+                <h2 className="text-2xl font-sans-ui font-bold mb-6 text-[#D4AF37] uppercase tracking-widest">{title}</h2>
+                <p className="text-3xl md:text-4xl text-white font-serif-classic italic leading-relaxed mb-12">{question}</p>
+                <div className="bg-[#1a0f0f]/80 border border-[#722F37]/50 p-6 w-full max-w-2xl">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-4">Speaking Starters</p>
+                    <p className="text-lg text-zinc-300 font-sans-ui font-light italic">"{hint}"</p>
+                </div>
+            </div>
+        );
+
+        const VocabFocusSlide = () => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn relative z-10 text-center">
+                <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-10">Nature Vocabulary</p>
+                <div className="grid md:grid-cols-2 gap-8 w-full">
+                    <div className="bible-card p-8 flex flex-col items-center hover:border-sacred-gold transition-colors cursor-pointer" onClick={() => window.openDictionary('Seed', 'A small object produced by a plant.', 'A mustard seed is very small.', 'Have you ever planted a seed?')}>
+                        <Icon name="seedling" size={40} className="text-sacred-gold mb-4" />
+                        <h2 className="text-3xl font-serif-classic italic text-white mb-2">Seed</h2>
+                    </div>
+                    <div className="bible-card p-8 flex flex-col items-center hover:border-sacred-gold transition-colors cursor-pointer" onClick={() => window.openDictionary('Tree', 'A woody plant with branches.', 'The mulberry tree has deep roots.', 'Are there big trees in your city?')}>
+                        <Icon name="tree" size={40} className="text-emerald-500 mb-4" />
+                        <h2 className="text-3xl font-serif-classic italic text-white mb-2">Tree</h2>
+                    </div>
+                    <div className="bible-card p-8 flex flex-col items-center hover:border-sacred-gold transition-colors cursor-pointer" onClick={() => window.openDictionary('Mountain', 'A large natural elevation of the earth.', 'The mountain is very high.', 'Do you like to visit mountains?')}>
+                        <Icon name="mountain" size={40} className="text-zinc-400 mb-4" />
+                        <h2 className="text-3xl font-serif-classic italic text-white mb-2">Mountain</h2>
+                    </div>
+                    <div className="bible-card p-8 flex flex-col items-center hover:border-sacred-gold transition-colors cursor-pointer" onClick={() => window.openDictionary('Sea', 'The expanse of salt water covering most of the earth.', 'The tree was planted in the sea.', 'Do you prefer the sea or the mountains?')}>
+                        <Icon name="water" size={40} className="text-blue-400 mb-4" />
+                        <h2 className="text-3xl font-serif-classic italic text-white mb-2">Sea</h2>
+                    </div>
+                </div>
+                <p className="text-zinc-500 mt-8 text-xs font-sans-ui uppercase tracking-widest">Click cards to open the lexicon</p>
+            </div>
+        );
+
+        const GreekRootsSlide = () => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn text-center z-10">
+                <h2 className="font-sans-ui font-black text-xl text-sacred-gold uppercase tracking-[0.3em] mb-10">Greek Etymology</h2>
+                <div className="grid md:grid-cols-2 gap-10 items-center">
+                    <div className="text-center">
+                        <p className="text-6xl font-serif-classic italic text-white mb-4">Faith</p>
+                        <p className="text-sacred-gold font-bold tracking-widest uppercase text-sm">Pistis (πίστις)</p>
+                    </div>
+                    <div className="text-left border-l-2 border-sacred-gold/50 pl-8">
+                        <p className="text-2xl text-zinc-200 mb-4">Meaning: <strong className="text-white">Total Trust and Confidence.</strong></p>
+                        <p className="text-lg text-zinc-400 font-light leading-relaxed">Faith is not just a feeling. It is a decision to trust completely in someone's character.</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ScholarDeskSlide = ({ title, content }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <div className="bible-card">
+                    <div className="flex items-center gap-4 mb-8 border-b border-sacred-gold/20 pb-4 justify-center">
+                        <i data-lucide="book-open" className="text-sacred-gold w-6 h-6"></i>
+                        <h2 className="font-sans-ui font-black text-xl text-sacred-gold uppercase tracking-[0.2em]">{title}</h2>
+                    </div>
+                    <p className="font-serif-classic text-2xl leading-loose text-zinc-300">
+                        {content}
+                    </p>
+                </div>
+            </div>
+        );
+
+        const DilemmaSlide = ({ title, question, hint }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name="scale-balanced" size={40} className="text-[#D4AF37] mb-8 opacity-80" />
+                <h2 className="text-4xl font-sans-ui font-black mb-8 text-white uppercase tracking-widest">{title}</h2>
+                <p className="text-2xl md:text-3xl text-zinc-300 font-serif-classic italic leading-relaxed mb-12">{question}</p>
+                <div className="bg-[#1a0f0f]/80 border border-[#722F37]/50 p-6 w-full max-w-2xl mx-auto">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-2">Speak your truth</p>
+                    <p className="text-lg text-zinc-300 font-sans-ui font-light">{hint}</p>
+                </div>
+            </div>
+        );
+
+        const VideoSlide = ({ title, start, end, mission }) => {
+            const videoSrc = `https://www.youtube.com/embed/${YOUTUBE_ID}?start=${start}${end ? '&end='+end : ''}&rel=0&modestbranding=1&showinfo=0&autoplay=0`;
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn text-center z-10">
+                    <h2 className="text-3xl font-serif-classic italic text-[#D4AF37] mb-2">{title}</h2>
+                    {mission && <p className="text-sm text-zinc-400 font-sans-ui font-bold tracking-widest uppercase mb-8">{mission}</p>}
+                    
+                    <div className="w-full aspect-video bg-black border border-[#D4AF37]/30 shadow-[0_0_40px_rgba(0,0,0,0.8)] p-2">
+                        <iframe className="w-full h-full" src={videoSrc} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen></iframe>
+                    </div>
+                </div>
+            );
+        };
+
+        const ScriptSlide = ({ speaker, quote, analysis, grammarNote }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn z-10">
+                <p className="text-zinc-500 font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-8">Text Analysis</p>
+                <div className="w-full flex flex-col md:flex-row gap-8 items-stretch">
+                    <div className="flex-[1.5] bible-card p-10 flex flex-col justify-center border-l-4 border-l-[#D4AF37]">
+                        <p className="text-xs text-[#D4AF37] font-bold uppercase tracking-widest mb-4">{speaker}</p>
+                        <p className="text-3xl text-white font-serif-classic italic leading-relaxed">"{quote}"</p>
+                    </div>
+                    <div className="flex-1 flex flex-col gap-4">
+                        <div className="bg-[#0a0a0a]/80 p-6 border border-zinc-800">
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Meaning</p>
+                            <p className="text-sm text-zinc-300 font-sans-ui leading-relaxed">{analysis}</p>
+                        </div>
+                        <div className="bg-[#1a0f0f]/80 p-6 border border-[#722F37]/30">
+                            <p className="text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest mb-2">Grammar Rule</p>
+                            <p className="text-sm text-white font-sans-ui leading-relaxed">{grammarNote}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const QuizSlide = ({ question, options, answerIndex, explanation, nextAction }) => {
+            const [selected, setSelected] = useState(null);
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn text-center z-10">
+                    <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-8">Observation Check</p>
+                    <h2 className="text-3xl md:text-4xl font-serif-classic italic text-white mb-10">{question}</h2>
+                    
+                    <div className="w-full flex flex-col gap-4">
+                        {options.map((opt, i) => (
+                            <button key={i} onClick={() => {
+                                setSelected(i);
+                                if(i === answerIndex) setTimeout(nextAction, 2500);
+                            }} className={`p-6 text-left border transition-all 
+                                ${selected === i && i === answerIndex ? 'bg-emerald-900/30 border-emerald-500' : 
+                                  selected === i && i !== answerIndex ? 'bg-red-900/30 border-red-500' : 
+                                  'bg-black/50 border-zinc-700 hover:border-[#D4AF37]'}`}>
+                                <p className="text-xl text-white font-sans-ui">{opt}</p>
+                            </button>
+                        ))}
+                    </div>
+
+                    {selected !== null && (
+                        <div className="mt-8">
+                            {selected === answerIndex ? 
+                                <p className="text-emerald-400 font-bold text-lg animate-fadeIn">{explanation}</p> : 
+                                <p className="text-red-400 font-bold text-lg animate-fadeIn">Incorrect. Try again.</p>
+                            }
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const GrammarCanCouldSlide = () => (
+            <div className="flex flex-col items-center justify-center h-full p-8 w-full max-w-5xl mx-auto animate-fadeIn text-center z-10">
+                <h2 className="text-4xl font-sans-ui font-black mb-4 text-white uppercase tracking-widest">Ability vs Possibility</h2>
+                <p className="text-zinc-400 mb-12 font-serif-classic italic text-xl">Understanding CAN and COULD.</p>
+
+                <div className="flex flex-col md:flex-row gap-8 text-left w-full">
+                    <div className="flex-1 bg-black/40 p-8 border border-zinc-800">
+                        <p className="text-sacred-gold text-2xl font-bold mb-4 font-sans-ui">CAN</p>
+                        <p className="text-zinc-300 font-sans-ui mb-4">Used for real abilities in the present.</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-sacred-gold pl-4">"I <strong className="text-sacred-gold">can</strong> walk." (I have legs)</p>
+                    </div>
+                    <div className="flex-1 bg-black/40 p-8 border border-zinc-800">
+                        <p className="text-sacred-gold text-2xl font-bold mb-4 font-sans-ui">COULD</p>
+                        <p className="text-zinc-300 font-sans-ui mb-4">Used for imaginary possibilities or suggestions.</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-sacred-gold pl-4">"You <strong className="text-sacred-gold">could</strong> move a mountain." (It is possible with faith)</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const GrammarSandboxSlide = () => {
+            const [sentence, setSentence] = useState("");
+            return (
+                <div className="flex flex-col items-center justify-center h-full p-8 w-full max-w-4xl mx-auto animate-fadeIn text-center z-10">
+                    <h2 className="text-3xl font-sans-ui font-bold mb-8 text-[#D4AF37] uppercase tracking-widest">Grammar Sandbox</h2>
+                    <p className="text-xl text-zinc-300 font-serif-classic italic mb-8">Click a modal verb to complete the thought.</p>
+                    
+                    <div className="flex gap-4 mb-8">
+                        <button onClick={() => setSentence("I CAN walk today.")} className="btn-gold px-8 py-3">CAN</button>
+                        <button onClick={() => setSentence("With faith, I COULD move a mountain.")} className="btn-gold px-8 py-3">COULD</button>
+                    </div>
+
+                    <div className="bible-card p-8 w-full text-center h-[150px] flex items-center justify-center border-[#D4AF37]/50">
+                        <p className="text-3xl text-white font-serif-classic italic leading-relaxed">
+                            {sentence || "Choose a word..."}
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        const ScalesOfTruthSlide = ({ nextStep }) => {
+            const [items] = useState([
+                { id: 1, text: "A Mountain", type: "problem" },
+                { id: 2, text: "A Mustard Seed", type: "faith" },
+                { id: 3, text: "My Fears", type: "problem" },
+                { id: 4, text: "Trusting God", type: "faith" }
+            ]);
+            const [selected, setSelected] = useState(null);
+            const [sorted, setSorted] = useState([]);
+            const [msg, setMsg] = useState("");
+
+            const handleDrop = (zone) => {
+                if(!selected) return;
+                if(selected.type === zone) {
+                    setSorted([...sorted, selected.id]);
+                    setMsg("Correct.");
+                    setSelected(null);
+                    if(sorted.length + 1 === items.length) setTimeout(nextStep, 2000);
+                } else {
+                    setMsg("Incorrect.");
+                }
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-8 animate-fadeIn relative text-center z-10">
+                    <h2 className="text-center font-sans-ui font-black text-2xl text-sacred-gold uppercase tracking-[0.2em] mb-8">The Scales of Truth</h2>
+                    <p className="text-center text-xl text-zinc-300 font-serif-classic italic mb-10">Select an item, then place it in the correct balance.</p>
+
+                    <div className="flex justify-center gap-4 mb-10">
+                        {items.filter(i => !sorted.includes(i.id)).map(item => (
+                            <div key={item.id} onClick={() => setSelected(item)} className={`truth-item ${selected?.id === item.id ? 'border-[#D4AF37] bg-[rgba(212,175,55,0.1)]' : ''}`}>
+                                {item.text}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8 w-full">
+                        <div onClick={() => handleDrop('problem')} className="scale-zone hover:bg-white/5 cursor-pointer flex flex-col items-center justify-center">
+                            <h3 className="text-burgundy font-bold uppercase tracking-widest mb-2">My Problems (Big)</h3>
+                        </div>
+                        <div onClick={() => handleDrop('faith')} className="scale-zone hover:bg-white/5 cursor-pointer flex flex-col items-center justify-center border-emerald-500/30">
+                            <h3 className="text-emerald-500 font-bold uppercase tracking-widest mb-2">True Faith (Small but Strong)</h3>
+                        </div>
+                    </div>
+                    <p className="text-center mt-8 text-xl font-bold text-sacred-gold h-8">{msg}</p>
+                </div>
+            );
+        };
+
+        const SyntaxBuilderSlide = ({ nextStep }) => {
+            const words = ["Nothing", "will", "be", "impossible", "to", "you."];
+            const [built, setBuilt] = useState([]);
+            const [available, setAvailable] = useState([...words].sort(() => Math.random() - 0.5));
+            const [msg, setMsg] = useState("");
+
+            const handleWord = (w) => {
+                setBuilt([...built, w]);
+                setAvailable(available.filter(av => av !== w));
+            };
+
+            const check = () => {
+                if(built.join(" ") === words.join(" ")) {
+                    setMsg("Verse restored.");
+                    setTimeout(nextStep, 2000);
+                } else {
+                    setMsg("Incorrect order. Try again.");
+                    setAvailable([...words].sort(() => Math.random() - 0.5));
+                    setBuilt([]);
+                }
+            };
+
+            return (
+                <div className="bible-card mx-auto max-w-4xl z-10 text-center animate-fadeIn">
+                    <h2 className="font-sans-ui font-black text-xl text-sacred-gold uppercase tracking-[0.2em] mb-6">Build the Scripture</h2>
+                    <p className="text-xl text-zinc-300 mb-8 font-serif-classic italic">Unscramble the words to build Jesus' promise.</p>
+
+                    <div className="min-h-[80px] border-2 border-dashed border-sacred-gold/40 p-4 flex flex-wrap gap-4 mb-8 bg-black/20 items-center justify-center">
+                        {built.map((w, i) => <div key={i} className="bg-white text-black font-bold font-serif-classic px-6 py-3 shadow-md">{w}</div>)}
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        {available.map((w, i) => <div key={i} onClick={() => handleWord(w)} className="bg-zinc-800 text-white font-bold font-serif-classic px-6 py-3 cursor-pointer hover:-translate-y-1 transition-transform border border-zinc-600">{w}</div>)}
+                    </div>
+
+                    <button onClick={check} className="btn-gold w-full text-sm">Verify Verse</button>
+                    <p className="text-center mt-6 text-xl font-bold h-8 text-sacred-gold">{msg}</p>
+                </div>
+            );
+        };
+
+        const CandlelightSlide = () => {
+            const [revealed, setRevealed] = useState(false);
+
+            const handleMove = (e) => {
+                const container = e.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                container.style.setProperty('--mouse-x', `${x}px`);
+                container.style.setProperty('--mouse-y', `${y}px`);
+            };
+
+            return (
+                <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center z-10 animate-fadeIn">
+                    <div className="bible-card p-0 overflow-hidden candlelight-container h-[350px] w-full mb-6" onMouseMove={handleMove}>
+                        <div className="candlelight-overlay"></div>
+                        <div className="candlelight-content w-full h-full flex flex-col items-center justify-center text-center p-12">
+                            <p className="font-sans-ui font-black text-sm text-sacred-gold uppercase tracking-[0.3em] mb-4 opacity-50">Seek the Light</p>
+                            <p className="text-5xl md:text-7xl font-serif-classic italic font-bold">"Trust His Promises."</p>
+                        </div>
+                    </div>
+                    
+                    {!revealed ? (
+                        <div className="text-center animate-fadeIn">
+                            <p className="text-zinc-500 mb-4 font-sans-ui text-sm uppercase tracking-widest">Move your cursor to illuminate the truth.</p>
+                            <button onClick={() => setRevealed(true)} className="btn-gold px-8 py-3 text-sm">Reflect on this truth</button>
+                        </div>
+                    ) : (
+                        <div className="w-full bg-[#1a0f0f]/80 border border-[#722F37]/50 p-6 text-left animate-fadeIn shadow-2xl">
+                            <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-3 flex items-center gap-2">
+                                <Icon name="comments" size={14}/> Discussion
+                            </p>
+                            <p className="text-2xl text-white font-serif-classic italic mb-5 leading-relaxed">
+                                "It is easy to trust when things are good. How do you trust His promises when things go wrong?"
+                            </p>
+                            <div className="bg-black/50 p-4 border-l-2 border-[#D4AF37]">
+                                <p className="text-[10px] text-zinc-500 font-sans-ui font-bold tracking-widest uppercase mb-1">Speaking Starters</p>
+                                <p className="text-base text-zinc-300 font-sans-ui italic">"When things go wrong, I try to remember that..."</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ShadowingSlide = () => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn text-center z-10">
+                <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-6">Fluency Practice</p>
+                <h2 className="text-4xl font-serif-classic italic text-white mb-10">Listen & Imitate</h2>
+                
+                <div className="flex flex-col md:flex-row w-full gap-8 items-center">
+                    <div className="w-full md:w-1/2 aspect-video bg-black border border-[#D4AF37]/30 p-1">
+                        <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${YOUTUBE_ID}?start=46&end=50&rel=0&modestbranding=1&showinfo=0&loop=1&playlist=${YOUTUBE_ID}`} frameBorder="0" allowFullScreen></iframe>
+                    </div>
+                    <div className="w-full md:w-1/2 bible-card p-10 text-left">
+                        <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-4">Target Phrase</p>
+                        <p className="text-3xl text-white font-serif-classic italic mb-8">"It's not about size, Philip."</p>
+                        <div className="space-y-4">
+                            <p className="text-sm font-sans-ui text-zinc-300"><strong className="text-[#D4AF37]">Step 1:</strong> Listen to the rhythm.</p>
+                            <p className="text-sm font-sans-ui text-zinc-300"><strong className="text-[#D4AF37]">Step 2:</strong> Mumble along.</p>
+                            <p className="text-sm font-sans-ui text-zinc-300"><strong className="text-[#D4AF37]">Step 3:</strong> Speak aloud with the actor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const WritingSlide = ({ title, prompt, sub }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name="feather-pointed" size={40} className="text-[#D4AF37] mb-8 opacity-80" />
+                <h2 className="text-4xl font-sans-ui font-black mb-8 text-white uppercase tracking-widest">{title}</h2>
+                <p className="text-2xl text-zinc-300 font-serif-classic italic leading-relaxed mb-8">{sub || "Open the Theological Notes (Top Right) and write your reflection."}</p>
+                <div className="bg-[#1a0f0f]/80 border border-[#722F37]/50 p-8 w-full text-left">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-4">Prompt</p>
+                    <p className="text-xl text-zinc-200 font-sans-ui font-light">{prompt}</p>
+                </div>
+            </div>
+        );
+
+        // ==========================================
+        // 📚 25 SLIDES DATA
+        // ==========================================
+        const SLIDES_DATA = [
+            { type: "intro" }, // 1
+            { type: "guide" }, // 2
+            { type: "discussion", title: "Small Things", question: "Look at your hands. Can you see something tiny?", hint: "Yes, I can see... / My ring is..." }, // 3
+            { type: "discussion", title: "Trust", question: "Is it easy to trust people?", hint: "Yes, it is easy because... / No, it is hard to trust..." }, // 4
+            { type: "vocabFocus" }, // 5
+            { type: "greekRoots" }, // 6
+            { type: "scholar", title: "Botany of the Bible", content: "A mustard seed is 1 to 2 millimeters, but it grows into a tree 3 meters tall. Jesus used it to show that small beginnings can have huge results." }, // 7
+            { type: "dilemma", title: "The Disciples' Problem", question: "Why did the disciples say 'Increase our faith'?", hint: "They thought faith was about QUANTITY, not QUALITY." }, // 8
+            { type: "scholar", title: "Pre-Video Focus", content: "We will watch Jesus teaching. Listen carefully for two important words: MOUNTAIN and MOVE." }, // 9
+            { type: "video", title: "The Teaching", start: 4, end: 38, mission: "Watch the scene." }, // 10
+            { type: "discussion", title: "First Impressions", question: "How does Jesus speak? Is He calm or angry?", hint: "He is very calm. He is teaching them a lesson." }, // 11
+            { type: "script", speaker: "Judas", quote: "Rabbi, increase our faith.", analysis: "Judas uses an Imperative (a command) to make a strong request.", grammarNote: "Imperatives don't use 'You'. We just use the base verb (e.g., 'Increase')." }, // 12
+            { type: "script", speaker: "Jesus", quote: "If you had faith the size of a mustard seed, you could say to a mountain: move.", analysis: "He contrasts the smallest seed with the biggest mountain.", grammarNote: "'Could' expresses possibility. It means 'it is possible to say'." }, // 13
+            { type: "quiz", question: "What is physically bigger?", options: ["A mustard seed", "A mountain", "A mulberry tree"], answerIndex: 1, explanation: "A mountain is huge! But Jesus says faith can move it." }, // 14
+            { type: "grammarCanCould" }, // 15
+            { type: "grammarSandbox" }, // 16
+            { type: "scales" }, // 17
+            { type: "script", speaker: "Jesus", quote: "Trusting his promises. Choosing his will for your life instead of your own.", analysis: "Faith is surrendering your control.", grammarNote: "'Instead of' means 'In place of'." }, // 18
+            { type: "builder" }, // 19
+            { type: "candlelight" }, // 20
+            { type: "discussion", title: "The 'Who' Factor", question: "Faith is not about size. It is about WHO your faith is in. Who is God for you?", hint: "God is my Father. He is strong and good." }, // 21
+            { type: "shadowing" }, // 22
+            { type: "writing", title: "The Scribe's Journal", prompt: "I trust God because He is ______." }, // 23
+            { type: "writing", title: "Homework: Move the Mountain", prompt: "Identify a 'mountain' (problem) in your life right now. Write: 'This mountain will move.'", sub: "Take this challenge home." }, // 24
+            { type: "end" } // 25
+        ];
+
+        // --- MAIN APPLICATION ---
+        function App() {
+            const [started, setStarted] = useState(false);
+            const [slideIdx, setSlideIdx] = useState(0);
+            const [isAppFullscreen, setIsAppFullscreen] = useState(false);
+
+            useEffect(() => {
+                const handleFsChange = () => setIsAppFullscreen(!!document.fullscreenElement);
+                document.addEventListener('fullscreenchange', handleFsChange);
+                return () => document.removeEventListener('fullscreenchange', handleFsChange);
+            }, []);
+
+            const toggleAppFullscreen = async () => {
+                try {
+                    if (!document.fullscreenElement) {
+                        if (document.documentElement.requestFullscreen) {
+                            await document.documentElement.requestFullscreen();
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            await document.exitFullscreen();
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Fullscreen API issue:", e);
+                }
+            };
+
+            const next = () => { if (slideIdx < SLIDES_DATA.length - 1) setSlideIdx(s => s + 1); };
+            const prev = () => { if (slideIdx > 0) setSlideIdx(s => s - 1); };
+
+            if (!started) {
+                return (
+                    <div className="w-full h-screen relative flex flex-col">
+                        <div className="leather-overlay"></div>
+                        <TeacherGuideSlide startLesson={() => setStarted(true)} />
+                    </div>
+                );
+            }
+
+            const current = SLIDES_DATA[slideIdx];
+
+            const renderSlide = () => {
+                switch (current.type) {
+                    case "intro": return <CoverSlide nextSlide={next} />;
+                    case "guide": return <TeacherGuideSlide startLesson={() => setSlideIdx(2)} />; // Safefall
+                    case "discussion": return <DiscussionSlide title={current.title} question={current.question} hint={current.hint} />;
+                    case "vocabFocus": return <VocabFocusSlide />;
+                    case "greekRoots": return <GreekRootsSlide />;
+                    case "scholar": return <ScholarDeskSlide title={current.title} content={current.content} />;
+                    case "dilemma": return <DilemmaSlide title={current.title} question={current.question} hint={current.hint} />;
+                    case "video": return <VideoSlide title={current.title} start={current.start} end={current.end} mission={current.mission} />;
+                    case "script": return <ScriptSlide speaker={current.speaker} quote={current.quote} analysis={current.analysis} grammarNote={current.grammarNote} />;
+                    case "quiz": return <QuizSlide question={current.question} options={current.options} answerIndex={current.answerIndex} explanation={current.explanation} nextAction={next} />;
+                    case "grammarCanCould": return <GrammarCanCouldSlide />;
+                    case "grammarSandbox": return <GrammarSandboxSlide />;
+                    case "scales": return <ScalesOfTruthSlide nextStep={next} />;
+                    case "builder": return <SyntaxBuilderSlide nextStep={next} />;
+                    case "candlelight": return <CandlelightSlide />;
+                    case "shadowing": return <ShadowingSlide />;
+                    case "writing": return <WritingSlide title={current.title} prompt={current.prompt} sub={current.sub} />;
+                    case "end":
+                        return (
+                        <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto text-center p-8 animate-fadeIn z-10">
+                            <Icon name="seedling" size={80} className="text-[#D4AF37] mb-8 opacity-80" />
+                            <h1 className="text-5xl md:text-7xl font-serif-classic italic mb-6 text-white tracking-tight">Go in peace.</h1>
+                            <p className="text-[#D4AF37] font-sans-ui text-sm font-bold tracking-[0.3em] uppercase mb-12">Your faith is secure.</p>
+                            <button className="btn-gold px-12 py-4 text-sm" onClick={() => window.location.reload()}>Return to Menu</button>
+                        </div>
+                        );
+                    default: return <div className="text-white text-2xl z-10">Error loading module.</div>;
+                }
+            };
+
+            return (
+                <div className="w-full h-screen font-sans-ui overflow-hidden flex flex-col relative selection:bg-[#D4AF37]/30 selection:text-white">
+                    <div className="leather-overlay"></div>
+                    <div className="divine-glow"></div>
+                    <div className="cross-watermark"><Icon name="cross" /></div>
+                    <div className="gold-foil-frame"></div>
+                    <div className="ribbon-bookmark"></div>
+
+                    <TeacherTools isFs={isAppFullscreen} toggleFs={toggleAppFullscreen} />
+
+                    <div className="flex-1 relative z-10 w-full h-full overflow-y-auto pt-10 pb-24 flex items-center justify-center">
+                        {renderSlide()}
+                    </div>
+
+                    {/* Footer / Controls */}
+                    {slideIdx > 0 && (
+                        <div className="z-50 w-full p-6 absolute bottom-0 flex flex-col items-center">
+                            <div className="max-w-5xl w-full flex flex-col gap-4">
+                                <div className="flex justify-between items-center w-full relative">
+                                    <button onClick={prev} disabled={slideIdx === 0} className="text-zinc-500 hover:text-[#D4AF37] font-bold text-xs uppercase tracking-widest disabled:opacity-30 transition-colors flex items-center gap-2">
+                                        <Icon name="arrow-left" size={14} /> Back
+                                    </button>
+                                    
+                                    <div className="absolute left-1/2 transform -translate-x-1/2 text-zinc-600 font-bold tracking-[0.2em] text-[10px] uppercase hidden sm:block">
+                                        PAGE {slideIdx + 1} OF {SLIDES_DATA.length}
+                                    </div>
+
+                                    <button onClick={next} disabled={slideIdx === SLIDES_DATA.length - 1} className="text-[#D4AF37] hover:text-white font-bold text-xs uppercase tracking-widest disabled:opacity-30 transition-colors flex items-center gap-2">
+                                        Next <Icon name="arrow-right" size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
